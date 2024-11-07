@@ -1,5 +1,7 @@
-import 'package:lms/lms.dart' as lms;
+import 'package:lms/controller.dart';
 
 void main(List<String> arguments) {
-  print('Hello world: ${lms.calculate()}!');
+  var controller = Controller();
+
+  controller.flow();
 }
