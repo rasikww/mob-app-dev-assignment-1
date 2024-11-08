@@ -2,49 +2,129 @@ import 'package:lms/book.dart';
 import 'package:lms/input.dart';
 import 'package:lms/view.dart';
 
-class Controller{
-  static Map<String,Book> bookShelf = {};
+class Controller {
+  static Map<String, Book> bookShelf = {};
 
   var view = View();
   var input = Input();
 
-  void flow(){
-    view.printMainMenu();
-    int optionNumber;
+  void flow() {
+    L7:
     while (true) {
-      try{
-        optionNumber = int.parse(input.getInput());
-        break;
-      }on Exception {
-        view.printErrorEnter();
-      }
-    }
-    switch(optionNumber){
-      case 0 :  input.systemExit();
-      case 1 :  {
-        Book? newBook;
-        while (true) {
-          newBook = createBook();
-          if (newBook == null) {
-            continue;
-          }else{
-            break;
-          }
+      view.printMainMenu();
+      int optionNumber;
+      while (true) {
+        try {
+          optionNumber = int.parse(input.getInput());
+          break;
+        } on Exception {
+          view.printErrorEnter();
         }
-        addBookToShelf(newBook);
-        print("book added, ${newBook.title}");
       }
-      case 2 :  {
-
+      switch (optionNumber) {
+        L2:
+        case 0:
+          input.systemExit();
+        L3:
+        case 1:
+          {
+            Book? newBook;
+            L1:
+            while (true) {
+              newBook = createBook();
+              if (newBook == null) {
+                continue;
+              } else {
+                break;
+              }
+            }
+            addBookToShelf(newBook);
+            print("book added, ${newBook.title}");
+            view.printAddAgain();
+            int optNum = int.parse(input.getInput());
+            if (optNum == 0) {
+              continue L2;
+            } else if (optNum == 1) {
+              continue L3;
+            } else if (optNum == 2) {
+              continue L7;
+            } else {
+              continue L6;
+            }
+          }
+        L4:
+        case 2:
+          {
+            R1:
+            while (true) {
+              view.printRemoveMenu();
+              String removeIsbn;
+              try {
+                removeIsbn = input.getInput();
+                if (!bookShelf.containsKey(removeIsbn)) {
+                  view.printErrorNoBook();
+                  continue R1;
+                } else {
+                  Book? removedBook = bookShelf[removeIsbn];
+                  bookShelf.remove(removeIsbn);
+                  print("Book titled: ${removedBook?.title} was deleted");
+                  R2:
+                  while (true) {
+                    view.printRemoveSubMenu();
+                    int optRemove;
+                    try {
+                      optRemove = int.parse(input.getInput());
+                      if (optRemove == 0) {
+                        continue L2;
+                      } else if (optRemove == 1) {
+                        continue L7;
+                      }
+                    } on Exception {
+                      view.printErrorEnter();
+                      continue R2;
+                    }
+                  }
+                }
+              } on Exception {
+                view.printErrorEnter();
+                continue R1;
+              }
+            }
+          }
+        L5:
+        case 3:
+          {
+            V1:
+            while (true) {
+              view.printViewBooksMenu();
+              showShelf();
+              view.printViewBooksSubMenu();
+              try {
+                var viewOption = int.parse(input.getInput());
+                if (viewOption == 0) {
+                  input.systemExit();
+                } else if (viewOption == 1) {
+                  continue L7;
+                } else {
+                  view.printErrorEnter();
+                  continue V1;
+                }
+              } on Exception {
+                view.printErrorEnter();
+                continue V1;
+              }
+            }
+          }
+        L6:
+        default:
+          view.printErrorEnter();
+          continue L7;
       }
-      default : view.printErrorEnter();
+      break L7;
     }
-
-    showShelf();
-
   }
 
-  Book? createBook(){
+  Book? createBook() {
     Book? book;
     view.printAddBookMenu();
     view.printAddIsbn();
@@ -60,18 +140,24 @@ class Controller{
     view.printAddGenre();
     String genre = input.getInput();
     try {
-      book = Book(isbn, title, author, int.parse(pageCount), double.parse(rating), genre);
+      book = Book(isbn, title, author, int.parse(pageCount),
+          double.parse(rating), genre);
     } on Exception {
       print("Error Occurred");
     }
-      return book;
+    return book;
   }
 
-  void addBookToShelf(Book book){
+  void addBookToShelf(Book book) {
     bookShelf[book.isbn] = book;
-
   }
-  void showShelf(){
-    Controller.bookShelf.forEach((key, value) => print("$key, Book: ${value.title} by ${value.author}"));
+
+  void showShelf() {
+    if (bookShelf.isEmpty) {
+      print("-- No books available --");
+    } else {
+      Controller.bookShelf.forEach((key, value) => print(
+          "$key, Book: ${value.title} by Author ${value.author} of ${value.genre} Genre with rating of ${value.rating}"));
+    }
   }
 }
